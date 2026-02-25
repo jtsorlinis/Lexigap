@@ -22,9 +22,7 @@ function HelpModal({ isOpen, onClose }: HelpModalProps): JSX.Element | null {
         </p>
 
         <ul className="help-rules">
-          <li>
-            You have 8 valid guesses. Invalid guesses do not consume attempts.
-          </li>
+          <li>Invalid guesses do not consume attempts.</li>
         </ul>
 
         <div className="help-example-grid">
