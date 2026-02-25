@@ -8,22 +8,51 @@ interface GuessInputProps {
   errorMessage: string | null;
   closestDownAttempt: Attempt | null;
   closestUpAttempt: Attempt | null;
+  targetWord: string;
   onSubmitGuess: (guess: string) => boolean;
 }
 
 interface HintRowProps {
   attempt: Attempt | null;
   directionSymbol: "↓" | "↑";
+  targetWord: string;
 }
 
-function HintRow({ attempt, directionSymbol }: HintRowProps): JSX.Element {
+function getLeadingMatchLength(word: string, targetWord: string): number {
+  const maxLength = Math.min(word.length, targetWord.length);
+  let index = 0;
+
+  while (index < maxLength && word[index] === targetWord[index]) {
+    index += 1;
+  }
+
+  return index;
+}
+
+function renderHintWord(word: string, targetWord: string): JSX.Element[] {
+  const uppercaseWord = word.toUpperCase();
+  const leadingMatchLength = getLeadingMatchLength(word, targetWord);
+
+  return uppercaseWord.split("").map((letter, index) => (
+    <span
+      key={`${word}-${index}`}
+      className={index < leadingMatchLength ? "hint-letter-match" : "hint-letter"}
+    >
+      {letter}
+    </span>
+  ));
+}
+
+function HintRow({ attempt, directionSymbol, targetWord }: HintRowProps): JSX.Element {
   return (
     <div className="attempt-row hint-row" aria-live="polite">
       <span className="attempt-direction hint-direction">
         {directionSymbol}
       </span>
-      <span className={attempt ? "attempt-word" : "attempt-word placeholder"}>
-        {attempt ? attempt.guess.toUpperCase() : "PLACEHOLDER"}
+      <span
+        className={attempt ? "attempt-word hint-word" : "attempt-word hint-word placeholder"}
+      >
+        {attempt ? renderHintWord(attempt.guess, targetWord) : "PLACEHOLDER"}
       </span>
       <span
         className={
@@ -44,6 +73,7 @@ function GuessInput({
   errorMessage,
   closestDownAttempt,
   closestUpAttempt,
+  targetWord,
   onSubmitGuess,
 }: GuessInputProps): JSX.Element {
   const [guess, setGuess] = useState("");
@@ -59,7 +89,11 @@ function GuessInput({
 
   return (
     <section className="panel">
-      <HintRow attempt={closestDownAttempt} directionSymbol="↓" />
+      <HintRow
+        attempt={closestDownAttempt}
+        directionSymbol="↓"
+        targetWord={targetWord}
+      />
 
       <form className="guess-form" onSubmit={onSubmit}>
         <div className="guess-input-wrap">
@@ -84,7 +118,11 @@ function GuessInput({
         </div>
       </form>
 
-      <HintRow attempt={closestUpAttempt} directionSymbol="↑" />
+      <HintRow
+        attempt={closestUpAttempt}
+        directionSymbol="↑"
+        targetWord={targetWord}
+      />
 
       {errorMessage ? <p className="error-text">{errorMessage}</p> : null}
     </section>

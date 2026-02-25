@@ -192,7 +192,7 @@ function App(): JSX.Element {
       return;
     }
 
-    const emojiRow = buildEmojiRow(nextState.attempts);
+    const emojiRow = buildEmojiRow(nextState.attempts, nextState.maxGuesses);
 
     setStats((current) => {
       const updated = applyResultToStats(current, {
@@ -230,7 +230,7 @@ function App(): JSX.Element {
   }
 
   async function copyShareText(): Promise<void> {
-    const shareText = buildShareText(gameState.puzzle.puzzleNumber, gameState.attempts);
+    const shareText = buildShareText(gameState.puzzle.puzzleNumber, gameState.attempts, gameState.maxGuesses);
 
     try {
       await navigator.clipboard.writeText(shareText);
@@ -247,8 +247,8 @@ function App(): JSX.Element {
   }
 
   const shareText = useMemo(
-    () => buildShareText(gameState.puzzle.puzzleNumber, gameState.attempts),
-    [gameState.attempts, gameState.puzzle.puzzleNumber]
+    () => buildShareText(gameState.puzzle.puzzleNumber, gameState.attempts, gameState.maxGuesses),
+    [gameState.attempts, gameState.maxGuesses, gameState.puzzle.puzzleNumber]
   );
 
   const closestDownAttempt = useMemo(() => {
@@ -300,6 +300,7 @@ function App(): JSX.Element {
         errorMessage={errorMessage}
         closestDownAttempt={closestDownAttempt}
         closestUpAttempt={closestUpAttempt}
+        targetWord={gameState.puzzle.targetWord}
         onSubmitGuess={onSubmitGuess}
       />
 

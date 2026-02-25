@@ -2,10 +2,10 @@ import type { Direction, DistanceBucket } from './types';
 
 export const DISTANCE_BUCKETS: readonly DistanceBucket[] = [
   { id: 'exact', emoji: '🟩', label: 'Correct', min: 0, max: 0 },
-  { id: 'veryClose', emoji: '🟨', label: '1-10 away', min: 1, max: 10 },
-  { id: 'close', emoji: '🟧', label: '10-50 away', min: 10, max: 50 },
-  { id: 'far', emoji: '🟥', label: '50-250 away', min: 50, max: 250 },
-  { id: 'veryFar', emoji: '⬛', label: '251+ away', min: 251, max: Number.POSITIVE_INFINITY }
+  { id: 'veryClose', emoji: '🟨', label: '1-9 away', min: 1, max: 9 },
+  { id: 'close', emoji: '🟧', label: '10-49 away', min: 10, max: 49 },
+  { id: 'far', emoji: '🟥', label: '50-249 away', min: 50, max: 249 },
+  { id: 'veryFar', emoji: '⬛', label: '250+ away', min: 250, max: Number.POSITIVE_INFINITY }
 ];
 
 export function getDirection(guessRank: number, targetRank: number): Direction {

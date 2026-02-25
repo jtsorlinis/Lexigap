@@ -11,11 +11,11 @@ describe('feedback', () => {
   it('maps distances to share buckets', () => {
     expect(getDistanceBucket(0).emoji).toBe('🟩');
     expect(getDistanceBucket(1).emoji).toBe('🟨');
-    expect(getDistanceBucket(10).emoji).toBe('🟨');
-    expect(getDistanceBucket(11).emoji).toBe('🟧');
-    expect(getDistanceBucket(50).emoji).toBe('🟧');
-    expect(getDistanceBucket(51).emoji).toBe('🟥');
-    expect(getDistanceBucket(250).emoji).toBe('🟥');
-    expect(getDistanceBucket(251).emoji).toBe('⬛');
+    expect(getDistanceBucket(9).emoji).toBe('🟨');
+    expect(getDistanceBucket(10).emoji).toBe('🟧');
+    expect(getDistanceBucket(49).emoji).toBe('🟧');
+    expect(getDistanceBucket(50).emoji).toBe('🟥');
+    expect(getDistanceBucket(249).emoji).toBe('🟥');
+    expect(getDistanceBucket(250).emoji).toBe('⬛');
   });
 });

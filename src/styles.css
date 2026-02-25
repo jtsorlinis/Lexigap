@@ -249,6 +249,18 @@ button:disabled {
   white-space: nowrap;
 }
 
+.hint-word {
+  display: inline-flex;
+}
+
+.hint-letter {
+  color: inherit;
+}
+
+.hint-letter-match {
+  color: var(--exact);
+}
+
 .attempt-number {
   color: var(--muted);
   text-align: center;
@@ -358,6 +370,11 @@ button:disabled {
 
 .help-rules li {
   line-height: 1.35;
+}
+
+.help-example-grid {
+  display: grid;
+  gap: 10px;
 }
 
 .help-example-card {
