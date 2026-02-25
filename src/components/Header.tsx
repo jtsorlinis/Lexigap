@@ -1,10 +1,6 @@
 interface HeaderProps {
   puzzleNumber: number;
   isPractice: boolean;
-  requiredLength: number;
-  guessesRemaining: number;
-  theme: 'light' | 'dark';
-  onToggleTheme: () => void;
   onOpenHelp: () => void;
   onOpenStats: () => void;
 }
@@ -12,10 +8,6 @@ interface HeaderProps {
 function Header({
   puzzleNumber,
   isPractice,
-  requiredLength,
-  guessesRemaining,
-  theme,
-  onToggleTheme,
   onOpenHelp,
   onOpenStats
 }: HeaderProps): JSX.Element {
@@ -27,19 +19,12 @@ function Header({
           {isPractice ? `Practice #${puzzleNumber}` : `Puzzle #${puzzleNumber}`}
         </p>
       </div>
-      <div className="meta-group">
-        <span>Length: {requiredLength}</span>
-        <span>Remaining: {guessesRemaining}</span>
-      </div>
       <div className="header-actions">
-        <button type="button" onClick={onOpenStats} className="ghost-button">
-          Stats
+        <button type="button" onClick={onOpenStats} className="ghost-button icon-button" aria-label="Open stats" title="Stats">
+          📊
         </button>
-        <button type="button" onClick={onOpenHelp} className="ghost-button">
-          Help
-        </button>
-        <button type="button" onClick={onToggleTheme} className="ghost-button">
-          {theme === 'light' ? 'Dark' : 'Light'}
+        <button type="button" onClick={onOpenHelp} className="ghost-button icon-button" aria-label="Open help" title="Help">
+          ❓
         </button>
       </div>
     </header>

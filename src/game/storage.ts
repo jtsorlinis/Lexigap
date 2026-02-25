@@ -4,6 +4,7 @@ import type { GameSnapshot, LexiGapStats, PuzzleDefinition } from './types';
 const NAMESPACE = 'lexigap:v1';
 const STATS_KEY = `${NAMESPACE}:stats`;
 const THEME_KEY = `${NAMESPACE}:theme`;
+const HELP_SEEN_KEY = `${NAMESPACE}:help_seen`;
 
 function canUseLocalStorage(): boolean {
   return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
@@ -69,4 +70,12 @@ export function loadTheme(): 'light' | 'dark' {
 
 export function saveTheme(theme: 'light' | 'dark'): void {
   writeJson(THEME_KEY, theme);
+}
+
+export function hasSeenHelpModal(): boolean {
+  return readJson<boolean>(HELP_SEEN_KEY) === true;
+}
+
+export function markHelpModalSeen(): void {
+  writeJson(HELP_SEEN_KEY, true);
 }

@@ -12,12 +12,13 @@ import { buildEmojiRow, buildShareText } from './game/share';
 import { applyResultToStats, createEmptyStats } from './game/stats';
 import {
   getGameStorageKey,
+  hasSeenHelpModal,
   loadGameSnapshot,
   loadStats,
   loadTheme,
+  markHelpModalSeen,
   saveGameSnapshot,
-  saveStats,
-  saveTheme
+  saveStats
 } from './game/storage';
 import { createInitialGameState, createPuzzleDefinition, submitGuess, MAX_GUESSES } from './game/puzzle';
 import type { Attempt, GameState, GameStatus } from './game/types';
@@ -85,7 +86,7 @@ function App(): JSX.Element {
   const storageKey = useMemo(() => getGameStorageKey(puzzle), [puzzle]);
 
   const [stats, setStats] = useState(() => loadStats() ?? createEmptyStats());
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => loadTheme());
+  const [theme] = useState<'light' | 'dark'>(() => loadTheme());
   const [helpOpen, setHelpOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
   const [resultOpen, setResultOpen] = useState(false);
@@ -129,8 +130,16 @@ function App(): JSX.Element {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    saveTheme(theme);
   }, [theme]);
+
+  useEffect(() => {
+    if (hasSeenHelpModal()) {
+      return;
+    }
+
+    setHelpOpen(true);
+    markHelpModalSeen();
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !RANDOM_MODE_ENABLED) {
@@ -281,10 +290,6 @@ function App(): JSX.Element {
       <Header
         puzzleNumber={gameState.puzzle.puzzleNumber}
         isPractice={gameState.puzzle.isPractice}
-        requiredLength={gameState.puzzle.requiredLength}
-        guessesRemaining={guessesRemaining}
-        theme={theme}
-        onToggleTheme={() => setTheme((current) => (current === 'light' ? 'dark' : 'light'))}
         onOpenHelp={() => setHelpOpen(true)}
         onOpenStats={() => setStatsOpen(true)}
       />
@@ -297,6 +302,10 @@ function App(): JSX.Element {
         closestUpAttempt={closestUpAttempt}
         onSubmitGuess={onSubmitGuess}
       />
+
+      <p className="guesses-remaining-text">
+        <strong>{guessesRemaining} guesses remaining</strong>
+      </p>
 
       <AttemptList attempts={gameState.attempts} />
 

@@ -12,8 +12,8 @@ function makeAttempt(guess: string, distance: number): Attempt {
     bucket: {
       id: 'veryFar',
       emoji: '⬛',
-      label: '101+ away',
-      min: 101,
+      label: '251+ away',
+      min: 251,
       max: Number.POSITIVE_INFINITY
     }
   };
@@ -29,7 +29,7 @@ describe('share', () => {
       makeAttempt('eeee', 0)
     ]);
 
-    expect(row).toBe('⬛🟥🟧🟨🟩');
+    expect(row).toBe('🟥🟧🟨🟨🟩');
   });
 
   it('builds spoiler-free share text with no guesses/arrows/distances', () => {
