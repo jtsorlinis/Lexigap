@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import AttemptList from './components/AttemptList';
 import GuessInput from './components/GuessInput';
 import Header from './components/Header';
 import HelpModal from './components/HelpModal';
@@ -192,7 +191,7 @@ function App(): JSX.Element {
       return;
     }
 
-    const emojiRow = buildEmojiRow(nextState.attempts, nextState.maxGuesses);
+    const emojiRow = buildEmojiRow(nextState.attempts);
 
     setStats((current) => {
       const updated = applyResultToStats(current, {
@@ -230,7 +229,7 @@ function App(): JSX.Element {
   }
 
   async function copyShareText(): Promise<void> {
-    const shareText = buildShareText(gameState.puzzle.puzzleNumber, gameState.attempts, gameState.maxGuesses);
+    const shareText = buildShareText(gameState.puzzle.puzzleNumber, gameState.attempts);
 
     try {
       await navigator.clipboard.writeText(shareText);
@@ -247,8 +246,8 @@ function App(): JSX.Element {
   }
 
   const shareText = useMemo(
-    () => buildShareText(gameState.puzzle.puzzleNumber, gameState.attempts, gameState.maxGuesses),
-    [gameState.attempts, gameState.maxGuesses, gameState.puzzle.puzzleNumber]
+    () => buildShareText(gameState.puzzle.puzzleNumber, gameState.attempts),
+    [gameState.attempts, gameState.puzzle.puzzleNumber]
   );
 
   const closestDownAttempt = useMemo(() => {
@@ -307,8 +306,6 @@ function App(): JSX.Element {
       <p className="guesses-remaining-text">
         <strong>{guessesRemaining} guesses remaining</strong>
       </p>
-
-      <AttemptList attempts={gameState.attempts} />
 
       <HelpModal isOpen={helpOpen} onClose={() => setHelpOpen(false)} />
       <StatsModal isOpen={statsOpen} stats={stats} onClose={() => setStatsOpen(false)} />

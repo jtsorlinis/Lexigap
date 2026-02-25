@@ -32,14 +32,14 @@ describe('share', () => {
     expect(row).toBe('🟥🟧🟨🟨🟩');
   });
 
-  it('pads winning rows with green squares up to max guesses', () => {
-    const row = buildEmojiRow([makeAttempt('aaaa', 30), makeAttempt('bbbb', 0)], 8);
-    expect(row).toBe('🟧🟩🟩🟩🟩🟩🟩🟩');
+  it('does not pad winning rows beyond actual guesses', () => {
+    const row = buildEmojiRow([makeAttempt('aaaa', 30), makeAttempt('bbbb', 0)]);
+    expect(row).toBe('🟧🟩');
   });
 
   it('builds spoiler-free share text with no guesses/arrows/distances', () => {
     const attempts: Attempt[] = [makeAttempt('apple', 7), makeAttempt('berry', 0)];
-    const text = buildShareText(54, attempts, 8);
+    const text = buildShareText(54, attempts);
     const [header, row] = text.split('\n');
 
     expect(header).toBe('LexiGap #54');

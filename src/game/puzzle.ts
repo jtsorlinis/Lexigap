@@ -134,6 +134,31 @@ function isAlphabeticWord(value: string): boolean {
   return /^[a-zA-Z]+$/.test(value);
 }
 
+function getGuessBounds(attempts: GameState['attempts']): {
+  lowerBoundRank?: number;
+  upperBoundRank?: number;
+} {
+  let lowerBoundRank: number | undefined;
+  let upperBoundRank: number | undefined;
+
+  for (const attempt of attempts) {
+    if (attempt.direction === 'Later') {
+      if (lowerBoundRank === undefined || attempt.guessRank > lowerBoundRank) {
+        lowerBoundRank = attempt.guessRank;
+      }
+      continue;
+    }
+
+    if (attempt.direction === 'Earlier') {
+      if (upperBoundRank === undefined || attempt.guessRank < upperBoundRank) {
+        upperBoundRank = attempt.guessRank;
+      }
+    }
+  }
+
+  return { lowerBoundRank, upperBoundRank };
+}
+
 export function submitGuess(state: GameState, rawGuess: string, dictionary: DictionaryModel): SubmitGuessResult {
   if (state.status !== 'playing') {
     return {
@@ -205,6 +230,30 @@ export function submitGuess(state: GameState, rawGuess: string, dictionary: Dict
       valid: false,
       consumedAttempt: false,
       error: 'Target word is missing from dictionary bucket.'
+    };
+  }
+
+  // Prevent guesses outside the best known lower/upper bounds from ↑/↓ hints.
+  const { lowerBoundRank, upperBoundRank } = getGuessBounds(state.attempts);
+  const bucketWords = dictionary.buckets[state.puzzle.requiredLength] ?? [];
+
+  if (lowerBoundRank !== undefined && guessRank < lowerBoundRank) {
+    const lowerBoundWord = bucketWords[lowerBoundRank] ?? 'known lower bound';
+    return {
+      state,
+      valid: false,
+      consumedAttempt: false,
+      error: `Guess is outside your current range. Try a word after ${lowerBoundWord.toUpperCase()}.`
+    };
+  }
+
+  if (upperBoundRank !== undefined && guessRank > upperBoundRank) {
+    const upperBoundWord = bucketWords[upperBoundRank] ?? 'known upper bound';
+    return {
+      state,
+      valid: false,
+      consumedAttempt: false,
+      error: `Guess is outside your current range. Try a word before ${upperBoundWord.toUpperCase()}.`
     };
   }
 

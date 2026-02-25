@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { bucketClassName } from "../game/feedback";
 import type { Attempt } from "../game/types";
 
@@ -44,20 +44,53 @@ function renderHintWord(word: string, targetWord: string): JSX.Element[] {
 }
 
 function HintRow({ attempt, directionSymbol, targetWord }: HintRowProps): JSX.Element {
+  const transitionKey = attempt
+    ? `${attempt.guess}:${attempt.distance}:${attempt.direction}`
+    : "empty";
+  const previousKeyRef = useRef<string | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    if (previousKeyRef.current === null) {
+      previousKeyRef.current = transitionKey;
+      return;
+    }
+
+    if (previousKeyRef.current !== transitionKey) {
+      setIsAnimating(true);
+      const timeout = window.setTimeout(() => {
+        setIsAnimating(false);
+      }, 220);
+
+      previousKeyRef.current = transitionKey;
+      return () => {
+        window.clearTimeout(timeout);
+      };
+    }
+
+    return undefined;
+  }, [transitionKey]);
+
   return (
     <div className="attempt-row hint-row" aria-live="polite">
       <span className="attempt-direction hint-direction">
         {directionSymbol}
       </span>
       <span
-        className={attempt ? "attempt-word hint-word" : "attempt-word hint-word placeholder"}
+        className={
+          attempt
+            ? `attempt-word hint-word${isAnimating ? " hint-changing" : ""}`
+            : "attempt-word hint-word placeholder"
+        }
       >
         {attempt ? renderHintWord(attempt.guess, targetWord) : "PLACEHOLDER"}
       </span>
       <span
         className={
           attempt
-            ? `hint-distance ${bucketClassName(attempt.distance)}`
+            ? `hint-distance ${bucketClassName(attempt.distance)}${
+                isAnimating ? " hint-changing" : ""
+              }`
             : "hint-distance placeholder"
         }
       >
