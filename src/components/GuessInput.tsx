@@ -1,9 +1,10 @@
-import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { bucketClassName } from "../game/feedback";
 import type { Attempt } from "../game/types";
 
 interface GuessInputProps {
   requiredLength: number;
+  attempts: Attempt[];
   disabled: boolean;
   errorMessage: string | null;
   closestDownAttempt: Attempt | null;
@@ -43,17 +44,29 @@ function renderHintWord(word: string, targetWord: string): JSX.Element[] {
   ));
 }
 
-function renderGuessSlots(guess: string, requiredLength: number): JSX.Element[] {
-  const letters = guess.toUpperCase().slice(0, requiredLength).split("");
+function renderGuessSlots(
+  guess: string,
+  knownPrefix: string,
+  requiredLength: number,
+  disabled: boolean
+): JSX.Element[] {
+  const knownLetters = knownPrefix.toUpperCase();
+  const guessedLetters = guess.toUpperCase().slice(0, requiredLength);
+  const activeIndex = !disabled && guess.length < requiredLength ? guess.length : -1;
 
   return Array.from({ length: requiredLength }, (_, index) => {
-    const letter = letters[index] ?? "";
+    const isKnownLetter = index < knownLetters.length;
+    const letter = isKnownLetter ? knownLetters[index] : guessedLetters[index] ?? "";
+    const baseClassName = isKnownLetter
+      ? "guess-slot guess-slot-known"
+      : letter
+      ? "guess-slot filled"
+      : "guess-slot";
+    const className =
+      index === activeIndex ? `${baseClassName} guess-slot-active` : baseClassName;
 
     return (
-      <span
-        key={`guess-slot-${index}`}
-        className={letter ? "guess-slot filled" : "guess-slot"}
-      >
+      <span key={`guess-slot-${index}`} className={className}>
         {letter}
       </span>
     );
@@ -72,6 +85,35 @@ function isEditableElement(target: EventTarget | null): boolean {
     tagName === "TEXTAREA" ||
     tagName === "SELECT"
   );
+}
+
+function getKnownPrefix(targetWord: string, attempts: Attempt[]): string {
+  let longest = 0;
+
+  for (const attempt of attempts) {
+    longest = Math.max(longest, getLeadingMatchLength(attempt.guess, targetWord));
+  }
+
+  return targetWord.slice(0, longest);
+}
+
+function normalizeAlphabetic(value: string): string {
+  return value.replace(/[^a-zA-Z]/g, "").toLowerCase();
+}
+
+function mergeGuessWithPrefix(
+  rawGuess: string,
+  knownPrefix: string,
+  requiredLength: number
+): string {
+  const normalizedGuess = normalizeAlphabetic(rawGuess);
+  const clampedPrefix = knownPrefix.slice(0, requiredLength);
+  const maxTailLength = Math.max(requiredLength - clampedPrefix.length, 0);
+  const tail = normalizedGuess.startsWith(clampedPrefix)
+    ? normalizedGuess.slice(clampedPrefix.length)
+    : normalizedGuess;
+
+  return `${clampedPrefix}${tail.slice(0, maxTailLength)}`;
 }
 
 function HintRow({ attempt, directionSymbol, targetWord }: HintRowProps): JSX.Element {
@@ -133,6 +175,7 @@ function HintRow({ attempt, directionSymbol, targetWord }: HintRowProps): JSX.El
 
 function GuessInput({
   requiredLength,
+  attempts,
   disabled,
   errorMessage,
   closestDownAttempt,
@@ -140,14 +183,22 @@ function GuessInput({
   targetWord,
   onSubmitGuess,
 }: GuessInputProps): JSX.Element {
-  const [guess, setGuess] = useState("");
+  const knownPrefix = useMemo(
+    () => getKnownPrefix(targetWord, attempts),
+    [attempts, targetWord]
+  );
+  const [guess, setGuess] = useState(() => knownPrefix);
+
+  useEffect(() => {
+    setGuess(knownPrefix);
+  }, [knownPrefix, requiredLength]);
 
   const submitGuess = useCallback((): void => {
     const accepted = onSubmitGuess(guess);
     if (accepted) {
-      setGuess("");
+      setGuess(knownPrefix);
     }
-  }, [guess, onSubmitGuess]);
+  }, [guess, knownPrefix, onSubmitGuess]);
 
   function onSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
@@ -174,12 +225,14 @@ function GuessInput({
 
       if (event.key === "Backspace") {
         event.preventDefault();
-        setGuess((current) => current.slice(0, -1));
+        setGuess((current) =>
+          current.length <= knownPrefix.length ? current : current.slice(0, -1)
+        );
         return;
       }
 
       if (event.key === "Enter") {
-        if (guess.length === 0) {
+        if (guess.length <= knownPrefix.length && knownPrefix.length < requiredLength) {
           return;
         }
 
@@ -206,7 +259,7 @@ function GuessInput({
     return () => {
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [disabled, guess.length, requiredLength, submitGuess]);
+  }, [disabled, guess.length, knownPrefix.length, requiredLength, submitGuess]);
 
   return (
     <section className="panel">
@@ -223,7 +276,7 @@ function GuessInput({
             style={{ gridTemplateColumns: `repeat(${requiredLength}, minmax(32px, 52px))` }}
             aria-hidden="true"
           >
-            {renderGuessSlots(guess, requiredLength)}
+            {renderGuessSlots(guess, knownPrefix, requiredLength, disabled)}
           </div>
           <input
             autoComplete="off"
@@ -232,7 +285,15 @@ function GuessInput({
             className="guess-input-native"
             value={guess}
             maxLength={requiredLength}
-            onChange={(event) => setGuess(event.target.value)}
+            onChange={(event) =>
+              setGuess(
+                mergeGuessWithPrefix(
+                  event.target.value,
+                  knownPrefix,
+                  requiredLength
+                )
+              )
+            }
             disabled={disabled}
             aria-label={`Enter a ${requiredLength}-letter word`}
           />

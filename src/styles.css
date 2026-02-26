@@ -144,12 +144,27 @@ body {
   background: color-mix(in srgb, var(--bg-alt) 52%, transparent);
 }
 
+.guess-slot-known {
+  color: var(--exact);
+  border-color: color-mix(in srgb, var(--exact) 62%, var(--border));
+  background: color-mix(in srgb, var(--exact) 16%, transparent);
+}
+
+.guess-slot-active {
+  border-color: color-mix(in srgb, var(--text) 16%, var(--border));
+  background: color-mix(in srgb, var(--bg-alt) 38%, transparent);
+}
+
 .guess-input-wrap:focus-within .guess-slot {
   border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
 }
 
 .guess-input-wrap:focus-within .guess-slot.filled {
   border-color: color-mix(in srgb, var(--accent) 68%, var(--border));
+}
+
+.guess-input-wrap:focus-within .guess-slot-known {
+  border-color: color-mix(in srgb, var(--exact) 62%, var(--border));
 }
 
 .guess-input-wrap.disabled .guess-slot {

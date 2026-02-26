@@ -295,6 +295,7 @@ function App(): JSX.Element {
 
       <GuessInput
         requiredLength={gameState.puzzle.requiredLength}
+        attempts={gameState.attempts}
         disabled={gameState.status !== 'playing'}
         errorMessage={errorMessage}
         closestDownAttempt={closestDownAttempt}
