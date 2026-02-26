@@ -281,15 +281,19 @@ button:disabled {
 .hint-row {
   margin: 0;
   grid-template-columns: 34px minmax(0, 1fr) 132px;
+  height: 44px;
+  padding: 0 10px;
 }
 
 .hint-direction {
   text-align: center;
+  font-size: 1.35rem;
+  line-height: 1;
 }
 
 .hint-distance {
-  font-size: 0.82rem;
-  font-weight: 400;
+  font-size: 0.94rem;
+  font-weight: 500;
   text-align: right;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -297,6 +301,7 @@ button:disabled {
 
 .hint-word {
   display: inline-flex;
+  font-size: 1.08rem;
 }
 
 .hint-letter {
@@ -550,7 +555,7 @@ button:disabled {
   }
 
   .hint-row {
-    grid-template-columns: 28px minmax(0, 1fr) 110px;
+    grid-template-columns: 28px minmax(0, 1fr) 150px;
   }
 
   .attempt-direction {

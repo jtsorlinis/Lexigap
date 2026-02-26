@@ -102,7 +102,7 @@ function App(): JSX.Element {
 
     return {
       puzzle: initial.puzzle,
-      maxGuesses: snapshot.maxGuesses,
+      maxGuesses: Math.max(snapshot.maxGuesses, MAX_GUESSES),
       attempts: snapshot.attempts,
       status: snapshot.status
     };
@@ -115,7 +115,7 @@ function App(): JSX.Element {
     if (shouldUseSnapshot(snapshot, initial.puzzle)) {
       setGameState({
         puzzle: initial.puzzle,
-        maxGuesses: snapshot.maxGuesses,
+        maxGuesses: Math.max(snapshot.maxGuesses, MAX_GUESSES),
         attempts: snapshot.attempts,
         status: snapshot.status
       });
@@ -305,7 +305,7 @@ function App(): JSX.Element {
       />
 
       <p className="guesses-remaining-text">
-        <strong>{guessesRemaining} guesses remaining</strong>
+        <strong>{guessesRemaining} attempts remaining</strong>
       </p>
 
       <HelpModal isOpen={helpOpen} onClose={() => setHelpOpen(false)} />

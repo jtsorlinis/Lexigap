@@ -9,7 +9,7 @@ import type { DictionaryModel, GameState, PuzzleDefinition, SubmitGuessResult } 
 
 export const GAME_VERSION = 'v1';
 export const PUZZLE_EPOCH = '2026-01-01';
-export const MAX_GUESSES = 8;
+export const MAX_GUESSES = 10;
 export const MIN_BUCKET_SIZE = 500;
 
 export interface CreatePuzzleOptions {

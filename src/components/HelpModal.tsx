@@ -3,6 +3,8 @@ interface HelpModalProps {
   onClose: () => void;
 }
 
+const MAX_GUESSES = 10;
+
 function HelpModal({ isOpen, onClose }: HelpModalProps): JSX.Element | null {
   if (!isOpen) {
     return null;
@@ -18,7 +20,7 @@ function HelpModal({ isOpen, onClose }: HelpModalProps): JSX.Element | null {
       >
         <h2>How to play</h2>
         <p className="help-intro">
-          Find the hidden word in 8 guesses using distance and direction hints.
+          Find the hidden word in {MAX_GUESSES} guesses using distance and direction hints.
         </p>
 
         <ul className="help-rules">
