@@ -1,14 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
-import GuessInput from './components/GuessInput';
-import Header from './components/Header';
-import HelpModal from './components/HelpModal';
-import ResultModal from './components/ResultModal';
-import StatsModal from './components/StatsModal';
-import Toast from './components/Toast';
-import { createDictionaryModel } from './game/buckets';
-import { RAW_DICTIONARY } from './game/dictionary';
-import { buildEmojiRow, buildShareText } from './game/share';
-import { applyResultToStats, createEmptyStats } from './game/stats';
+import { useEffect, useMemo, useState } from "react";
+import GuessInput from "./components/GuessInput";
+import Header from "./components/Header";
+import HelpModal from "./components/HelpModal";
+import ResultModal from "./components/ResultModal";
+import StatsModal from "./components/StatsModal";
+import Toast from "./components/Toast";
+import { createDictionaryModel } from "./game/buckets";
+import { RAW_DICTIONARY } from "./game/dictionary";
+import { buildEmojiRow, buildShareText } from "./game/share";
+import { applyResultToStats, createEmptyStats } from "./game/stats";
 import {
   getGameStorageKey,
   hasSeenHelpModal,
@@ -17,26 +17,34 @@ import {
   loadTheme,
   markHelpModalSeen,
   saveGameSnapshot,
-  saveStats
-} from './game/storage';
-import { createInitialGameState, createPuzzleDefinition, submitGuess, MAX_GUESSES } from './game/puzzle';
-import type { Attempt, GameState, GameStatus } from './game/types';
+  saveStats,
+} from "./game/storage";
+import {
+  createInitialGameState,
+  createPuzzleDefinition,
+  submitGuess,
+  MAX_GUESSES,
+} from "./game/puzzle";
+import type { Attempt, GameState, GameStatus } from "./game/types";
 
-const RANDOM_MODE_ENABLED = import.meta.env.VITE_LEXIGAP_RANDOM_MODE === 'true';
+const RANDOM_MODE_ENABLED = import.meta.env.VITE_LEXIGAP_RANDOM_MODE === "true";
 
 function parsePracticeSeed(): string | undefined {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return undefined;
   }
 
-  const value = new URLSearchParams(window.location.search).get('practice');
+  const value = new URLSearchParams(window.location.search).get("practice");
   return value && value.trim().length > 0 ? value.trim() : undefined;
 }
 
 function generateRandomPracticeSeed(): string {
   const timestampToken = Date.now().toString(36);
 
-  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.getRandomValues === "function"
+  ) {
     const randomBuffer = new Uint32Array(2);
     crypto.getRandomValues(randomBuffer);
     return `random-${timestampToken}-${randomBuffer[0].toString(36)}${randomBuffer[1].toString(36)}`;
@@ -47,7 +55,7 @@ function generateRandomPracticeSeed(): string {
 
 function shouldUseSnapshot(
   snapshot: ReturnType<typeof loadGameSnapshot>,
-  puzzle: GameState['puzzle']
+  puzzle: GameState["puzzle"],
 ): snapshot is NonNullable<ReturnType<typeof loadGameSnapshot>> {
   if (!snapshot) {
     return false;
@@ -61,7 +69,10 @@ function shouldUseSnapshot(
 }
 
 function App(): JSX.Element {
-  const dictionaryModel = useMemo(() => createDictionaryModel(RAW_DICTIONARY), []);
+  const dictionaryModel = useMemo(
+    () => createDictionaryModel(RAW_DICTIONARY),
+    [],
+  );
   const initialPracticeSeed = useMemo(() => {
     const urlPracticeSeed = parsePracticeSeed();
 
@@ -71,21 +82,23 @@ function App(): JSX.Element {
 
     return urlPracticeSeed;
   }, []);
-  const [activePracticeSeed, setActivePracticeSeed] = useState<string | undefined>(initialPracticeSeed);
+  const [activePracticeSeed, setActivePracticeSeed] = useState<
+    string | undefined
+  >(initialPracticeSeed);
 
   const puzzle = useMemo(
     () =>
       createPuzzleDefinition({
         dictionary: dictionaryModel,
-        practiceSeed: activePracticeSeed
+        practiceSeed: activePracticeSeed,
       }),
-    [dictionaryModel, activePracticeSeed]
+    [dictionaryModel, activePracticeSeed],
   );
 
   const storageKey = useMemo(() => getGameStorageKey(puzzle), [puzzle]);
 
   const [stats, setStats] = useState(() => loadStats() ?? createEmptyStats());
-  const [theme] = useState<'light' | 'dark'>(() => loadTheme());
+  const [theme] = useState<"light" | "dark">(() => loadTheme());
   const [helpOpen, setHelpOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
   const [resultOpen, setResultOpen] = useState(false);
@@ -104,7 +117,7 @@ function App(): JSX.Element {
       puzzle: initial.puzzle,
       maxGuesses: Math.max(snapshot.maxGuesses, MAX_GUESSES),
       attempts: snapshot.attempts,
-      status: snapshot.status
+      status: snapshot.status,
     };
   });
 
@@ -117,9 +130,9 @@ function App(): JSX.Element {
         puzzle: initial.puzzle,
         maxGuesses: Math.max(snapshot.maxGuesses, MAX_GUESSES),
         attempts: snapshot.attempts,
-        status: snapshot.status
+        status: snapshot.status,
       });
-      setResultOpen(snapshot.status !== 'playing');
+      setResultOpen(snapshot.status !== "playing");
       return;
     }
 
@@ -128,7 +141,7 @@ function App(): JSX.Element {
   }, [puzzle, storageKey]);
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
   useEffect(() => {
@@ -141,20 +154,20 @@ function App(): JSX.Element {
   }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !RANDOM_MODE_ENABLED) {
+    if (typeof window === "undefined" || !RANDOM_MODE_ENABLED) {
       return;
     }
 
     const params = new URLSearchParams(window.location.search);
     if (activePracticeSeed) {
-      params.set('practice', activePracticeSeed);
+      params.set("practice", activePracticeSeed);
     } else {
-      params.delete('practice');
+      params.delete("practice");
     }
 
     const query = params.toString();
-    const nextUrl = `${window.location.pathname}${query ? `?${query}` : ''}`;
-    window.history.replaceState(window.history.state, '', nextUrl);
+    const nextUrl = `${window.location.pathname}${query ? `?${query}` : ""}`;
+    window.history.replaceState(window.history.state, "", nextUrl);
   }, [activePracticeSeed]);
 
   useEffect(() => {
@@ -182,12 +195,19 @@ function App(): JSX.Element {
       practiceSeed: nextState.puzzle.practiceSeed,
       maxGuesses: nextState.maxGuesses,
       attempts: nextState.attempts,
-      status: nextState.status
+      status: nextState.status,
     });
   }
 
-  function recordStatsIfCompleted(previousStatus: GameStatus, nextState: GameState): void {
-    if (nextState.puzzle.isPractice || previousStatus !== 'playing' || nextState.status === 'playing') {
+  function recordStatsIfCompleted(
+    previousStatus: GameStatus,
+    nextState: GameState,
+  ): void {
+    if (
+      nextState.puzzle.isPractice ||
+      previousStatus !== "playing" ||
+      nextState.status === "playing"
+    ) {
       return;
     }
 
@@ -197,9 +217,9 @@ function App(): JSX.Element {
       const updated = applyResultToStats(current, {
         puzzleNumber: nextState.puzzle.puzzleNumber,
         date: nextState.puzzle.melbourneDate,
-        won: nextState.status === 'won',
+        won: nextState.status === "won",
         guessCount: nextState.attempts.length,
-        emojiRow
+        emojiRow,
       });
 
       saveStats(updated);
@@ -211,7 +231,7 @@ function App(): JSX.Element {
     const result = submitGuess(gameState, rawGuess, dictionaryModel);
 
     if (!result.valid) {
-      setErrorMessage(result.error ?? 'Invalid guess.');
+      setErrorMessage(result.error ?? "Invalid guess.");
       return false;
     }
 
@@ -221,7 +241,7 @@ function App(): JSX.Element {
     persist(nextState);
     recordStatsIfCompleted(gameState.status, nextState);
 
-    if (nextState.status !== 'playing') {
+    if (nextState.status !== "playing") {
       setResultOpen(true);
     }
 
@@ -229,13 +249,16 @@ function App(): JSX.Element {
   }
 
   async function copyShareText(): Promise<void> {
-    const shareText = buildShareText(gameState.puzzle.puzzleNumber, gameState.attempts);
+    const shareText = buildShareText(
+      gameState.puzzle.puzzleNumber,
+      gameState.attempts,
+    );
 
     try {
       await navigator.clipboard.writeText(shareText);
-      setToastMessage('Share text copied');
+      setToastMessage("Share text copied");
     } catch {
-      setToastMessage('Clipboard unavailable');
+      setToastMessage("Clipboard unavailable");
     }
   }
 
@@ -245,16 +268,34 @@ function App(): JSX.Element {
     setActivePracticeSeed(generateRandomPracticeSeed());
   }
 
+  function focusGuessInputFromHint(): void {
+    if (gameState.status !== "playing" || helpOpen || statsOpen || resultOpen) {
+      return;
+    }
+
+    const input = document.querySelector<HTMLInputElement>(
+      ".guess-input-native:not(:disabled)",
+    );
+
+    if (!input) {
+      return;
+    }
+
+    input.focus();
+    const caretIndex = input.value.length;
+    input.setSelectionRange(caretIndex, caretIndex);
+  }
+
   const shareText = useMemo(
     () => buildShareText(gameState.puzzle.puzzleNumber, gameState.attempts),
-    [gameState.attempts, gameState.puzzle.puzzleNumber]
+    [gameState.attempts, gameState.puzzle.puzzleNumber],
   );
 
   const closestDownAttempt = useMemo(() => {
     let best: Attempt | null = null;
 
     for (const attempt of gameState.attempts) {
-      if (attempt.direction !== 'Later') {
+      if (attempt.direction !== "Later") {
         continue;
       }
 
@@ -270,7 +311,7 @@ function App(): JSX.Element {
     let best: Attempt | null = null;
 
     for (const attempt of gameState.attempts) {
-      if (attempt.direction !== 'Earlier') {
+      if (attempt.direction !== "Earlier") {
         continue;
       }
 
@@ -286,30 +327,54 @@ function App(): JSX.Element {
 
   return (
     <main className="app-shell">
-      <Header
-        puzzleNumber={gameState.puzzle.puzzleNumber}
-        isPractice={gameState.puzzle.isPractice}
-        onOpenHelp={() => setHelpOpen(true)}
-        onOpenStats={() => setStatsOpen(true)}
-      />
+      <div className="main-content">
+        <Header
+          puzzleNumber={gameState.puzzle.puzzleNumber}
+          isPractice={gameState.puzzle.isPractice}
+          onOpenHelp={() => setHelpOpen(true)}
+          onOpenStats={() => setStatsOpen(true)}
+        />
 
-      <GuessInput
-        requiredLength={gameState.puzzle.requiredLength}
-        attempts={gameState.attempts}
-        disabled={gameState.status !== 'playing'}
-        errorMessage={errorMessage}
-        closestDownAttempt={closestDownAttempt}
-        closestUpAttempt={closestUpAttempt}
-        targetWord={gameState.puzzle.targetWord}
-        onSubmitGuess={onSubmitGuess}
-      />
+        <GuessInput
+          requiredLength={gameState.puzzle.requiredLength}
+          attempts={gameState.attempts}
+          disabled={gameState.status !== "playing"}
+          errorMessage={errorMessage}
+          closestDownAttempt={closestDownAttempt}
+          closestUpAttempt={closestUpAttempt}
+          targetWord={gameState.puzzle.targetWord}
+          onSubmitGuess={onSubmitGuess}
+        />
 
-      <p className="guesses-remaining-text">
-        <strong>{guessesRemaining} attempts remaining</strong>
-      </p>
+        <p className="guesses-remaining-text">
+          <strong>{guessesRemaining} attempts remaining</strong>
+        </p>
+      </div>
+
+      <div
+        className="mobile-keyboard-hint-region"
+        role="button"
+        tabIndex={0}
+        aria-label="Focus guess input"
+        onClick={focusGuessInputFromHint}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            focusGuessInputFromHint();
+          }
+        }}
+      >
+        <p className="mobile-keyboard-hint">
+          tap anywhere to bring up the keyboard
+        </p>
+      </div>
 
       <HelpModal isOpen={helpOpen} onClose={() => setHelpOpen(false)} />
-      <StatsModal isOpen={statsOpen} stats={stats} onClose={() => setStatsOpen(false)} />
+      <StatsModal
+        isOpen={statsOpen}
+        stats={stats}
+        onClose={() => setStatsOpen(false)}
+      />
 
       <ResultModal
         isOpen={resultOpen}

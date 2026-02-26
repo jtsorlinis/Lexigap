@@ -14,18 +14,18 @@ function Header({
   return (
     <header className="panel header">
       <div className="title-group">
-        <h1>LexiGap</h1>
+        <div className="title-row">
+          <button type="button" onClick={onOpenStats} className="ghost-button icon-button" aria-label="Open stats" title="Stats">
+            📊
+          </button>
+          <h1>LexiGap</h1>
+          <button type="button" onClick={onOpenHelp} className="ghost-button icon-button" aria-label="Open help" title="Help">
+            ❓
+          </button>
+        </div>
         <p>
           {isPractice ? `Practice #${puzzleNumber}` : `Puzzle #${puzzleNumber}`}
         </p>
-      </div>
-      <div className="header-actions">
-        <button type="button" onClick={onOpenStats} className="ghost-button icon-button" aria-label="Open stats" title="Stats">
-          📊
-        </button>
-        <button type="button" onClick={onOpenHelp} className="ghost-button icon-button" aria-label="Open help" title="Help">
-          ❓
-        </button>
       </div>
     </header>
   );
