@@ -20,11 +20,12 @@ function HelpModal({ isOpen, onClose }: HelpModalProps): JSX.Element | null {
       >
         <h2>How to play</h2>
         <p className="help-intro">
-          Find the hidden word in {MAX_GUESSES} guesses using distance and direction hints.
+          Find the hidden word in {MAX_GUESSES} guesses using distance and
+          direction hints based on alphabetical (dictionary) order.
         </p>
 
         <ul className="help-rules">
-          <li>Invalid guesses do not consume attempts.</li>
+          {/* <li>Arrows and distance are alphabetical.</li> */}
         </ul>
 
         <div className="help-example-grid">
@@ -35,10 +36,19 @@ function HelpModal({ isOpen, onClose }: HelpModalProps): JSX.Element | null {
               <span className="attempt-word hint-word">BRICK</span>
               <span className="hint-distance bucket-close">34 words away</span>
             </div>
+            <div className="attempt-row hint-row help-example-row">
+              <span className="attempt-direction hint-direction">↑</span>
+              <span className="attempt-word hint-word">CLOCK</span>
+              <span className="hint-distance bucket-very-close">
+                12 words away
+              </span>
+            </div>
             <p className="help-example-note">
-              The <strong>↓</strong> means the target word is later than
-              <strong> BRICK</strong>. The distance shows the exact rank gap:
-              <strong> 34 words away</strong>.
+              This means the target word appears
+              <strong> 34</strong> words after
+              <strong> BRICK</strong> in the dictionary, and{" "}
+              <strong>12 </strong>
+              words before <strong>CLOCK</strong>.
             </p>
           </div>
 
@@ -58,8 +68,9 @@ function HelpModal({ isOpen, onClose }: HelpModalProps): JSX.Element | null {
               </span>
             </div>
             <p className="help-example-note">
-              Green letters show matching starting letters with the target. In
-              this example, the target starts with <strong>ST</strong>.
+              Green letters shows letters you have guessed correctly.In this
+              example, the target word starts with
+              <strong> ST</strong>.
             </p>
           </div>
         </div>
