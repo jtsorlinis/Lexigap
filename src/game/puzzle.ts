@@ -7,7 +7,7 @@ import { createSeededRandom, hashStringToSeed } from './seed';
 import { daysBetweenIsoDates, getMelbourneIsoDate } from './timezone';
 import type { DictionaryModel, GameState, PuzzleDefinition, SubmitGuessResult } from './types';
 
-export const GAME_VERSION = 'v1';
+export const GAME_VERSION = 'v2';
 export const PUZZLE_EPOCH = '2026-01-01';
 export const MAX_GUESSES = 10;
 export const MIN_BUCKET_SIZE = 500;

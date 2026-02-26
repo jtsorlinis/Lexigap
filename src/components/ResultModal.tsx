@@ -1,4 +1,4 @@
-import type { GameStatus, LexiGapStats } from '../game/types';
+import type { GameStatus } from '../game/types';
 
 interface ResultModalProps {
   isOpen: boolean;
@@ -6,8 +6,6 @@ interface ResultModalProps {
   targetWord: string;
   attemptsUsed: number;
   maxGuesses: number;
-  shareText: string;
-  stats: LexiGapStats;
   showNewPuzzleAction: boolean;
   onClose: () => void;
   onShare: () => void;
@@ -20,8 +18,6 @@ function ResultModal({
   targetWord,
   attemptsUsed,
   maxGuesses,
-  shareText,
-  stats,
   showNewPuzzleAction,
   onClose,
   onShare,
@@ -32,24 +28,22 @@ function ResultModal({
   }
 
   const title = status === 'won' ? 'Solved' : 'Out of guesses';
+  const isLoss = status === 'lost';
+  const targetLabel = isLoss ? 'Target word was:' : 'Target word:';
 
   return (
     <div className="modal-backdrop" role="presentation" onClick={onClose}>
-      <div className="modal" role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
-        <h2>{title}</h2>
-        <p>
-          Target word: <strong>{targetWord.toUpperCase()}</strong>
-        </p>
-        <p>
-          Attempts: {attemptsUsed}/{maxGuesses}
-        </p>
-        <p>
-          Wins: {stats.totalWins}/{stats.totalPlayed} | Streak: {stats.currentStreak} | Max streak: {stats.maxStreak}
+      <div className="modal result-modal" role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
+        <h2 className="result-title">{title}</h2>
+        <div className="result-target">
+          <p className="result-target-label">{targetLabel}</p>
+          <p className="result-target-word">{targetWord.toUpperCase()}</p>
+        </div>
+        <p className="result-attempts">
+          Attempts <strong>{attemptsUsed}/{maxGuesses}</strong>
         </p>
 
-        <textarea className="share-preview" readOnly value={shareText} />
-
-        <div className="modal-actions">
+        <div className="modal-actions result-actions">
           <button type="button" onClick={onShare}>
             Share
           </button>
