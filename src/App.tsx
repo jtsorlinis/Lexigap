@@ -287,15 +287,11 @@ function App(): JSX.Element {
     if (typeof navigator.share === "function") {
       try {
         await navigator.share({
-          title: `LexiGap #${gameState.puzzle.puzzleNumber}`,
           text: shareText,
         });
         return;
       } catch (error) {
-        if (
-          error instanceof DOMException &&
-          error.name === "AbortError"
-        ) {
+        if (error instanceof DOMException && error.name === "AbortError") {
           return;
         }
       }
