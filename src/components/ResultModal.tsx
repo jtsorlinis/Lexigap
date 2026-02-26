@@ -10,7 +10,7 @@ interface ResultModalProps {
   stats: LexiGapStats;
   showNewPuzzleAction: boolean;
   onClose: () => void;
-  onCopyShare: () => void;
+  onShare: () => void;
   onStartNewPuzzle: () => void;
 }
 
@@ -24,7 +24,7 @@ function ResultModal({
   stats,
   showNewPuzzleAction,
   onClose,
-  onCopyShare,
+  onShare,
   onStartNewPuzzle
 }: ResultModalProps): JSX.Element | null {
   if (!isOpen) {
@@ -50,8 +50,8 @@ function ResultModal({
         <textarea className="share-preview" readOnly value={shareText} />
 
         <div className="modal-actions">
-          <button type="button" onClick={onCopyShare}>
-            Copy Share
+          <button type="button" onClick={onShare}>
+            Share
           </button>
           {showNewPuzzleAction ? (
             <button type="button" className="ghost-button" onClick={onStartNewPuzzle}>

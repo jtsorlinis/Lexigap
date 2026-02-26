@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import GuessInput from "./components/GuessInput";
 import Header from "./components/Header";
 import HelpModal from "./components/HelpModal";
@@ -28,6 +28,156 @@ import {
 import type { Attempt, GameState, GameStatus } from "./game/types";
 
 const RANDOM_MODE_ENABLED = import.meta.env.VITE_LEXIGAP_RANDOM_MODE === "true";
+const RESULT_MODAL_DELAY_MS = 500;
+const WIN_RESULT_MODAL_DELAY_MS = 1000;
+const WIN_CELEBRATION_DURATION_MS = 480;
+
+interface WinConfettiPiece {
+  id: string;
+  side: "left" | "right";
+  left: string;
+  bottom: string;
+  width: string;
+  height: string;
+  delayMs: number;
+  durationMs: number;
+  color: string;
+}
+
+const WIN_CONFETTI_PIECES: WinConfettiPiece[] = [
+  {
+    id: "l1",
+    side: "left",
+    left: "11%",
+    bottom: "16%",
+    width: "8px",
+    height: "14px",
+    delayMs: 0,
+    durationMs: 460,
+    color: "#21a55a",
+  },
+  {
+    id: "l2",
+    side: "left",
+    left: "13%",
+    bottom: "15%",
+    width: "7px",
+    height: "12px",
+    delayMs: 24,
+    durationMs: 430,
+    color: "#d5b319",
+  },
+  {
+    id: "l3",
+    side: "left",
+    left: "10%",
+    bottom: "18%",
+    width: "6px",
+    height: "10px",
+    delayMs: 10,
+    durationMs: 470,
+    color: "#d78123",
+  },
+  {
+    id: "l4",
+    side: "left",
+    left: "14%",
+    bottom: "17%",
+    width: "8px",
+    height: "11px",
+    delayMs: 36,
+    durationMs: 450,
+    color: "#c84343",
+  },
+  {
+    id: "l5",
+    side: "left",
+    left: "12%",
+    bottom: "16%",
+    width: "5px",
+    height: "10px",
+    delayMs: 50,
+    durationMs: 440,
+    color: "#34b9ab",
+  },
+  {
+    id: "l6",
+    side: "left",
+    left: "15%",
+    bottom: "15%",
+    width: "7px",
+    height: "13px",
+    delayMs: 16,
+    durationMs: 455,
+    color: "#ffffff",
+  },
+  {
+    id: "r1",
+    side: "right",
+    left: "89%",
+    bottom: "16%",
+    width: "8px",
+    height: "14px",
+    delayMs: 0,
+    durationMs: 460,
+    color: "#21a55a",
+  },
+  {
+    id: "r2",
+    side: "right",
+    left: "87%",
+    bottom: "15%",
+    width: "7px",
+    height: "12px",
+    delayMs: 22,
+    durationMs: 435,
+    color: "#d5b319",
+  },
+  {
+    id: "r3",
+    side: "right",
+    left: "90%",
+    bottom: "18%",
+    width: "6px",
+    height: "10px",
+    delayMs: 12,
+    durationMs: 468,
+    color: "#d78123",
+  },
+  {
+    id: "r4",
+    side: "right",
+    left: "86%",
+    bottom: "17%",
+    width: "8px",
+    height: "11px",
+    delayMs: 34,
+    durationMs: 448,
+    color: "#c84343",
+  },
+  {
+    id: "r5",
+    side: "right",
+    left: "88%",
+    bottom: "16%",
+    width: "5px",
+    height: "10px",
+    delayMs: 48,
+    durationMs: 442,
+    color: "#34b9ab",
+  },
+  {
+    id: "r6",
+    side: "right",
+    left: "85%",
+    bottom: "15%",
+    width: "7px",
+    height: "13px",
+    delayMs: 18,
+    durationMs: 452,
+    color: "#ffffff",
+  },
+];
 
 function parsePracticeSeed(): string | undefined {
   if (typeof window === "undefined") {
@@ -104,6 +254,10 @@ function App(): JSX.Element {
   const [resultOpen, setResultOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showWinCelebration, setShowWinCelebration] = useState(false);
+  const [winCelebrationBurst, setWinCelebrationBurst] = useState(0);
+  const resultRevealTimeoutRef = useRef<number | null>(null);
+  const winCelebrationTimeoutRef = useRef<number | null>(null);
 
   const [gameState, setGameState] = useState<GameState>(() => {
     const initial = createInitialGameState(puzzle, MAX_GUESSES);
@@ -124,6 +278,9 @@ function App(): JSX.Element {
   useEffect(() => {
     const initial = createInitialGameState(puzzle, MAX_GUESSES);
     const snapshot = loadGameSnapshot(storageKey);
+    clearResultRevealTimeout();
+    clearWinCelebrationTimeout();
+    setShowWinCelebration(false);
 
     if (shouldUseSnapshot(snapshot, initial.puzzle)) {
       setGameState({
@@ -184,6 +341,45 @@ function App(): JSX.Element {
     };
   }, [toastMessage]);
 
+  useEffect(() => {
+    return () => {
+      clearResultRevealTimeout();
+      clearWinCelebrationTimeout();
+    };
+  }, []);
+
+  function clearResultRevealTimeout(): void {
+    if (resultRevealTimeoutRef.current !== null) {
+      window.clearTimeout(resultRevealTimeoutRef.current);
+      resultRevealTimeoutRef.current = null;
+    }
+  }
+
+  function clearWinCelebrationTimeout(): void {
+    if (winCelebrationTimeoutRef.current !== null) {
+      window.clearTimeout(winCelebrationTimeoutRef.current);
+      winCelebrationTimeoutRef.current = null;
+    }
+  }
+
+  function queueResultModalOpen(delayMs: number): void {
+    clearResultRevealTimeout();
+    resultRevealTimeoutRef.current = window.setTimeout(() => {
+      setResultOpen(true);
+      resultRevealTimeoutRef.current = null;
+    }, delayMs);
+  }
+
+  function triggerWinCelebration(): void {
+    clearWinCelebrationTimeout();
+    setWinCelebrationBurst((current) => current + 1);
+    setShowWinCelebration(true);
+    winCelebrationTimeoutRef.current = window.setTimeout(() => {
+      setShowWinCelebration(false);
+      winCelebrationTimeoutRef.current = null;
+    }, WIN_CELEBRATION_DURATION_MS);
+  }
+
   function persist(nextState: GameState): void {
     saveGameSnapshot(storageKey, {
       puzzleNumber: nextState.puzzle.puzzleNumber,
@@ -242,17 +438,42 @@ function App(): JSX.Element {
     recordStatsIfCompleted(gameState.status, nextState);
 
     if (nextState.status !== "playing") {
-      setResultOpen(true);
+      setResultOpen(false);
+      if (nextState.status === "won") {
+        triggerWinCelebration();
+      }
+      queueResultModalOpen(
+        nextState.status === "won"
+          ? WIN_RESULT_MODAL_DELAY_MS
+          : RESULT_MODAL_DELAY_MS,
+      );
     }
 
     return true;
   }
 
-  async function copyShareText(): Promise<void> {
+  async function shareResult(): Promise<void> {
     const shareText = buildShareText(
       gameState.puzzle.puzzleNumber,
       gameState.attempts,
     );
+
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share({
+          title: `LexiGap #${gameState.puzzle.puzzleNumber}`,
+          text: shareText,
+        });
+        return;
+      } catch (error) {
+        if (
+          error instanceof DOMException &&
+          error.name === "AbortError"
+        ) {
+          return;
+        }
+      }
+    }
 
     try {
       await navigator.clipboard.writeText(shareText);
@@ -263,6 +484,9 @@ function App(): JSX.Element {
   }
 
   function startNewPuzzle(): void {
+    clearResultRevealTimeout();
+    clearWinCelebrationTimeout();
+    setShowWinCelebration(false);
     setResultOpen(false);
     setErrorMessage(null);
     setActivePracticeSeed(generateRandomPracticeSeed());
@@ -369,6 +593,34 @@ function App(): JSX.Element {
         </p>
       </div>
 
+      {showWinCelebration ? (
+        <div
+          key={winCelebrationBurst}
+          className="win-party-overlay"
+          aria-hidden="true"
+        >
+          <span className="win-party-popper win-party-popper-left">🎉</span>
+          <span className="win-party-popper win-party-popper-right">🎉</span>
+          {WIN_CONFETTI_PIECES.map((piece) => (
+            <span
+              key={piece.id}
+              className={`win-confetti ${
+                piece.side === "left" ? "from-left" : "from-right"
+              }`}
+              style={{
+                left: piece.left,
+                bottom: piece.bottom,
+                width: piece.width,
+                height: piece.height,
+                backgroundColor: piece.color,
+                animationDelay: `${piece.delayMs}ms`,
+                animationDuration: `${piece.durationMs}ms`,
+              }}
+            />
+          ))}
+        </div>
+      ) : null}
+
       <HelpModal isOpen={helpOpen} onClose={() => setHelpOpen(false)} />
       <StatsModal
         isOpen={statsOpen}
@@ -386,7 +638,7 @@ function App(): JSX.Element {
         stats={stats}
         showNewPuzzleAction={RANDOM_MODE_ENABLED}
         onClose={() => setResultOpen(false)}
-        onCopyShare={copyShareText}
+        onShare={shareResult}
         onStartNewPuzzle={startNewPuzzle}
       />
 
