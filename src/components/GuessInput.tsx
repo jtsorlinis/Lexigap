@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { bucketClassName } from "../game/feedback";
 import type { Attempt } from "../game/types";
 
@@ -41,6 +41,37 @@ function renderHintWord(word: string, targetWord: string): JSX.Element[] {
       {letter}
     </span>
   ));
+}
+
+function renderGuessSlots(guess: string, requiredLength: number): JSX.Element[] {
+  const letters = guess.toUpperCase().slice(0, requiredLength).split("");
+
+  return Array.from({ length: requiredLength }, (_, index) => {
+    const letter = letters[index] ?? "";
+
+    return (
+      <span
+        key={`guess-slot-${index}`}
+        className={letter ? "guess-slot filled" : "guess-slot"}
+      >
+        {letter}
+      </span>
+    );
+  });
+}
+
+function isEditableElement(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  const tagName = target.tagName;
+  return (
+    target.isContentEditable ||
+    tagName === "INPUT" ||
+    tagName === "TEXTAREA" ||
+    tagName === "SELECT"
+  );
 }
 
 function HintRow({ attempt, directionSymbol, targetWord }: HintRowProps): JSX.Element {
@@ -111,14 +142,71 @@ function GuessInput({
 }: GuessInputProps): JSX.Element {
   const [guess, setGuess] = useState("");
 
-  function onSubmit(event: FormEvent<HTMLFormElement>): void {
-    event.preventDefault();
-
+  const submitGuess = useCallback((): void => {
     const accepted = onSubmitGuess(guess);
     if (accepted) {
       setGuess("");
     }
+  }, [guess, onSubmitGuess]);
+
+  function onSubmit(event: FormEvent<HTMLFormElement>): void {
+    event.preventDefault();
+    submitGuess();
   }
+
+  useEffect(() => {
+    if (disabled) {
+      return undefined;
+    }
+
+    function onKeyDown(event: KeyboardEvent): void {
+      if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) {
+        return;
+      }
+
+      if (isEditableElement(event.target)) {
+        return;
+      }
+
+      if (document.querySelector(".modal-backdrop")) {
+        return;
+      }
+
+      if (event.key === "Backspace") {
+        event.preventDefault();
+        setGuess((current) => current.slice(0, -1));
+        return;
+      }
+
+      if (event.key === "Enter") {
+        if (guess.length === 0) {
+          return;
+        }
+
+        event.preventDefault();
+        submitGuess();
+        return;
+      }
+
+      if (!/^[a-zA-Z]$/.test(event.key)) {
+        return;
+      }
+
+      event.preventDefault();
+      setGuess((current) => {
+        if (current.length >= requiredLength) {
+          return current;
+        }
+
+        return `${current}${event.key.toLowerCase()}`;
+      });
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [disabled, guess.length, requiredLength, submitGuess]);
 
   return (
     <section className="panel">
@@ -129,25 +217,25 @@ function GuessInput({
       />
 
       <form className="guess-form" onSubmit={onSubmit}>
-        <div className="guess-input-wrap">
+        <div className={disabled ? "guess-input-wrap disabled" : "guess-input-wrap"}>
+          <div
+            className="guess-slot-grid"
+            style={{ gridTemplateColumns: `repeat(${requiredLength}, minmax(32px, 52px))` }}
+            aria-hidden="true"
+          >
+            {renderGuessSlots(guess, requiredLength)}
+          </div>
           <input
             autoComplete="off"
             autoCapitalize="none"
             spellCheck={false}
-            placeholder={`Enter a ${requiredLength}-letter word`}
+            className="guess-input-native"
             value={guess}
             maxLength={requiredLength}
             onChange={(event) => setGuess(event.target.value)}
             disabled={disabled}
+            aria-label={`Enter a ${requiredLength}-letter word`}
           />
-          <button
-            type="submit"
-            disabled={disabled}
-            className="submit-icon-button"
-            aria-label="Submit guess"
-          >
-            ➤
-          </button>
         </div>
       </form>
 

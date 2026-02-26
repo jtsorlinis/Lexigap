@@ -46,7 +46,7 @@ body {
 }
 
 .app-shell {
-  max-width: 760px;
+  max-width: 500px;
   margin: 0 auto;
   padding: 20px;
   display: grid;
@@ -119,23 +119,54 @@ body {
   position: relative;
 }
 
-.guess-input-wrap input {
-  width: 100%;
-  padding-right: 48px;
+.guess-slot-grid {
+  display: grid;
+  gap: 8px;
+  justify-content: center;
 }
 
-.submit-icon-button {
-  position: absolute;
-  right: 6px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border-radius: 999px;
-  font-size: 0.95rem;
+.guess-slot {
+  height: 52px;
+  border: 2px solid color-mix(in srgb, var(--border) 92%, var(--bg-alt));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--bg-alt) 30%, transparent);
   display: grid;
   place-items: center;
+  font-size: clamp(1rem, 2.6vw, 1.35rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.guess-slot.filled {
+  border-color: color-mix(in srgb, var(--text) 24%, var(--border));
+  background: color-mix(in srgb, var(--bg-alt) 52%, transparent);
+}
+
+.guess-input-wrap:focus-within .guess-slot {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+}
+
+.guess-input-wrap:focus-within .guess-slot.filled {
+  border-color: color-mix(in srgb, var(--accent) 68%, var(--border));
+}
+
+.guess-input-wrap.disabled .guess-slot {
+  opacity: 0.62;
+}
+
+.guess-input-native {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  border: 0;
+  padding: 0;
+}
+
+.guess-input-native:disabled {
+  cursor: not-allowed;
 }
 
 input,
