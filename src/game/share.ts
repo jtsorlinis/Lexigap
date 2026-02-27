@@ -2,6 +2,7 @@ import { getDistanceBucket } from "./feedback";
 import type { Attempt } from "./types";
 
 export const GAME_NAME = "LexiGap";
+export const SHARE_URL = "https://jtsorlinis.github.io/Lexigap/";
 
 export function buildEmojiRow(attempts: Attempt[]): string {
   return attempts
@@ -14,5 +15,5 @@ export function buildShareText(
   attempts: Attempt[],
 ): string {
   const emojiRow = buildEmojiRow(attempts);
-  return `${GAME_NAME} #${puzzleNumber}\n\n${emojiRow}`;
+  return `${GAME_NAME} #${puzzleNumber}\n${emojiRow}\nPlay here: ${SHARE_URL}`;
 }

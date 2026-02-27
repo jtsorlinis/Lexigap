@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildEmojiRow, buildShareText } from '../src/game/share';
+import { buildEmojiRow, buildShareText, SHARE_URL } from '../src/game/share';
 import type { Attempt } from '../src/game/types';
 
 function makeAttempt(guess: string, distance: number): Attempt {
@@ -40,10 +40,11 @@ describe('share', () => {
   it('builds spoiler-free share text with no guesses/arrows/distances', () => {
     const attempts: Attempt[] = [makeAttempt('apple', 7), makeAttempt('berry', 0)];
     const text = buildShareText(54, attempts);
-    const [header, row] = text.split('\n');
+    const [header, row, playLine] = text.split('\n').filter(Boolean);
 
     expect(header).toBe('LexiGap #54');
     expect(row).toMatch(/^[⬛🟥🟧🟨🟩]+$/u);
+    expect(playLine).toBe(`Play here: ${SHARE_URL}`);
     expect(text.toLowerCase()).not.toContain('apple');
     expect(text.toLowerCase()).not.toContain('berry');
     expect(text).not.toMatch(/[↔↕←→↑↓]/u);
