@@ -71,11 +71,6 @@ function HelpModal({ isOpen, onClose }: HelpModalProps): JSX.Element | null {
           </div>
         </div>
 
-        <p className="help-legend">
-          <strong>Distance legend:</strong>
-          <br /> 🟩 0 🟨 &lt;10 🟧 &lt;50 🟥 &lt;250 ⬛ 250+.
-        </p>
-
         <div className="modal-actions">
           <button type="button" onClick={onClose}>
             Close
