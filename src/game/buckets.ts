@@ -1,7 +1,7 @@
 import { normalizeDictionary } from './normalize';
 import type { DictionaryModel } from './types';
 
-export const DEFAULT_WORD_LENGTHS = [4, 5, 6, 7] as const;
+export const DEFAULT_WORD_LENGTHS = [4, 5, 6] as const;
 
 export function buildBuckets(words: string[], allowedLengths: readonly number[]): Record<number, string[]> {
   const buckets: Record<number, string[]> = {};
